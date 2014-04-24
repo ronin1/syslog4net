@@ -26,8 +26,7 @@ namespace syslog4net.Layout
         {
             IgnoresException = false;  //TODO deal with this. sealed?
 
-            this._layout = new PatternLayout("<%syslog-priority>1 %utcdate{yyyy-MM-ddTHH:mm:ss:FFZ} %syslog-hostname %appdomain"
-                + " %syslog-process-id %syslog-message-id %syslog-structured-data %message%newline");
+			this._layout = new PatternLayout("<%syslog-priority>1 %utcdate{yyyy-MM-ddTHH:mm:ss:FFZ} %syslog-hostname %appdomain %syslog-process-id %syslog-message-id %syslog-structured-data (%logger{2}) %message%newline");
 
             this._layout.AddConverter("syslog-priority", typeof(PriorityConverter));
             this._layout.AddConverter("syslog-hostname", typeof(HostnameConverter));
@@ -43,7 +42,8 @@ namespace syslog4net.Layout
         /// <param name="logEvent">logging event data to use</param>
         public override void Format(TextWriter writer, LoggingEvent logEvent)
         {
-            logEvent.Properties["log4net:StructuredDataPrefix"] = StructuredDataPrefix;
+			if(!string.IsNullOrWhiteSpace(StructuredDataPrefix))
+				logEvent.Properties["log4net:StructuredDataPrefix"] = StructuredDataPrefix;
 
             using (var stringWriter = new StringWriter(CultureInfo.InvariantCulture))
             {
@@ -74,10 +74,6 @@ namespace syslog4net.Layout
         /// </summary>
         public override void ActivateOptions()
         {
-            if (string.IsNullOrEmpty(this.StructuredDataPrefix))
-            {
-                throw new ArgumentNullException("StructuredDataPrefix");
-            }
             this._layout.ActivateOptions();
         }
     }
